@@ -15,6 +15,7 @@ discharge of cuttings and drilling fluids in a deep-water environment.
 """
 import numpy as np
 import matplotlib.pyplot as plt
+# plt.style.use('default')
 
 #Total volume of cuttings (input)
 total_volume = 815 #bbl (barrels)
@@ -39,6 +40,7 @@ for x,y,text in zip(xs,ys,texts):
     ax.text(x,y,text,fontsize=15,color='r')
 
 plt.show()
+# fig.savefig('PLUMAS/steps.png', dpi=500)
 
 #Define 6 drilling steps (horizontal ones are neglected)
 step_begin = [0,1,2,4,5,7]
