@@ -18,11 +18,12 @@ import matplotlib.pyplot as plt
 # plt.style.use('default')
 
 #Total volume of cuttings (input)
-total_volume = 815 #bbl (barrels)
+# total_volume = 815 #bbl (barrels)
+total_volume = 642 #bbl (barrels) (from Pivel)
 total_volume *= 0.1589873 #convert to m³
 
 #Read and convert drilling data - time and depth
-time, depth = np.loadtxt('PLUMAS/drilling_data.csv',
+time, depth = np.loadtxt('./drilling_data.csv',
                          delimiter=',', skiprows=1, unpack=True)
 
 time *= 60 # convert to seconds
@@ -62,22 +63,31 @@ for i in range(6):
 mflow_rate = flow_rate*2011 #kg/s
 
 #Read and convert particle data - size and fraction
-radius, mass_fraction = np.loadtxt('PLUMAS/particle_data.csv',
+# radius, mass_fraction = np.loadtxt('./particle_data.csv',
+#                                    delimiter=',', skiprows=1, unpack=True)
+radius, volume_fraction = np.loadtxt('./particle_data_Pivel.csv',
                                    delimiter=',', skiprows=1, unpack=True)
 
-diameter = radius*2/100 #meters
+diameter = radius*2/100 #convert to meters
 
 #Calculate "number flow" of cuttings - number of particles per second
 number = np.zeros((len(step_begin),len(diameter)))
 for i in range(len(step_begin)):
     for j in range(len(diameter)):
-        number[i,j] =  mflow_rate[i]*mass_fraction[j]
-        number[i,j] /= (2011*np.pi/6*diameter[j]**3)
-
-#number per timestep
-# number *= 10
+        # number[i,j] =  mflow_rate[i]*mass_fraction[j] #Use for mass fraction
+        # number[i,j] /= (2011*np.pi/6*diameter[j]**3)
+        number[i,j] =  flow_rate[i]*volume_fraction[j] #Use for volume fraction
+        number[i,j] /= (np.pi/6*diameter[j]**3)
 
 #Save data
-np.savetxt('PLUMAS/numbers.csv', np.concatenate((diameter.reshape(1,8),number)).T,
+# np.savetxt('./numbers.csv', np.concatenate((diameter.reshape(1,8),number)).T,
+#            delimiter=',', comments='',
+#            header='Diameter (m), Step 1, Step 2, Step 3, Step 4, Step 5, Step 6',)
+np.savetxt('./numbers_Pivel.csv', np.concatenate((diameter.reshape(1,8),number)).T,
            delimiter=',', comments='',
-           header='Diameter (m), Step 1, Step 2, Step 3, Step 4, Step 5, Step 6',)
+           header='Diameter (m), Step 1 (np/s), Step 2 (np/s), Step 3 (np/s), Step 4 (np/s), Step 5 (np/s), Step 6 (np/s)',)
+
+#Save mass flow rate for each step
+np.savetxt('./mass_flow_rate.csv', np.concatenate(((np.arange(1,7,dtype='int16')).reshape(1,6),mflow_rate.reshape(1,6))).T,
+           delimiter=',', comments='', fmt=['%i', '%f'],
+           header='Step number,Mass flow rate',)
